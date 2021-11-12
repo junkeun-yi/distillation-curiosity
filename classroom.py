@@ -20,8 +20,9 @@ class Student(object):
     def __init__(self, args, optimizer=None):
         self.env, _ = load_env_and_model(args.env, args.algo, args.folder)
 
-        num_inputs = self.env.observation_space.shape[0]
-        num_actions = self.env.action_space.shape[0]
+        num_inputs = self.env.observation_space.shape[0]*self.env.observation_space.shape[1] # fixed for atari env to do 2d convolution
+        # num_actions = self.env.action_space.shape[0]
+        num_actions = self.env.action_space.n
         self.training_batch_size = args.student_batch_size
         self.testing_batch_size = args.testing_batch_size
         self.loss_metric = args.loss_metric

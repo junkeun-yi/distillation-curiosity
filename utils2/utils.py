@@ -14,6 +14,7 @@ from sb3_contrib import QRDQN, TQC
 from stable_baselines3 import A2C, DDPG, DQN, HER, PPO, SAC, TD3
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.atari_wrappers import AtariWrapper
 from stable_baselines3.common.sb2_compat.rmsprop_tf_like import RMSpropTFLike  # noqa: F401
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv, VecFrameStack, VecNormalize
 
@@ -213,12 +214,27 @@ def create_test_env(
         vec_env_cls = SubprocVecEnv
         # start_method = 'spawn' for thread safe
 
+    # env = make_vec_env(
+    #     env_id,
+    #     n_envs=n_envs,
+    #     monitor_dir=log_dir,
+    #     seed=seed,
+    #     wrapper_class=env_wrapper,
+    #     env_kwargs=env_kwargs,
+    #     vec_env_cls=vec_env_cls,
+    #     vec_env_kwargs=vec_env_kwargs,
+    # )
+
+    # make atari environment instead
+    def atari_wrapper(env: gym.Env) -> gym.Env:
+        env = AtariWrapper(env, clip_reward=False)
+        return env
     env = make_vec_env(
         env_id,
         n_envs=n_envs,
-        monitor_dir=log_dir,
         seed=seed,
-        wrapper_class=env_wrapper,
+        monitor_dir=log_dir,
+        wrapper_class=atari_wrapper,
         env_kwargs=env_kwargs,
         vec_env_cls=vec_env_cls,
         vec_env_kwargs=vec_env_kwargs,

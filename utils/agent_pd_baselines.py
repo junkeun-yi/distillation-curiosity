@@ -105,14 +105,15 @@ def sample_generator(env, model, render=True, min_batch_size=10000,id_=0):
             episode_reward = 0.0
             ep_len = 0
 
-            for t in range(1000):
+            step_lim = 1000
+            for t in range(step_lim):
                 action, state = model.predict(obs, state=state, deterministic=True)
                 next_state, reward, done, _ = env.step(action)
 
                 episode_reward += reward[0]
                 ep_len += 1
 
-                if done:
+                if done or t >= step_lim-1: # hack to stop at step limit
                     # NOTE: for env using VecNormalize, the mean reward
                     # is a normalized reward when `--norm_reward` flag is passed
                     print(f"Episode Reward: {episode_reward:.2f}")
@@ -190,9 +191,22 @@ class AgentCollection:
         dataset = []
         for memory, policy in zip(memories, self.policies):
             batch = memory.sample()
-            batched_state = np.array(batch.state).reshape(-1, policy.env.observation_space.shape[0])
-            states = torch.from_numpy(batched_state).to(torch.float).to('cpu')
-            act_dist = torch.from_numpy(policy.predict(states, deterministic=deterministic)[0])
+            # batched_state = np.array(batch.state).reshape(-1, policy.env.observation_space.shape[0])
+            # states = torch.from_numpy(batched_state).to(torch.float).to('cpu')
+            # act_dist = torch.from_numpy(policy.predict(states, deterministic=deterministic)[0])
+            
+            # states = torch.from_numpy(np.array(batch.state).squeeze(1))
+            states, _ = policy.policy.obs_to_tensor(np.array(batch.state).squeeze(1))
+            # states = np.array(batch.state).squeeze(1)
+
+            # print(states.shape)
+            # print(policy.policy.observation_space.shape)
+
+            act_dist = policy.policy.get_distribution(states) # returns stable baselines distribution (categorical)
+            # print(act_dist)
+            # act_dist = torch.from_numpy(policy.predict(states, deterministic=deterministic)[0])
+            
+            # print("done!")
             dataset += [(state, act_dist) for state, act_dist in zip(states, act_dist)]
         return dataset, teacher_average_reward
 
