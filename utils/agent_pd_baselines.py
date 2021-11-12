@@ -107,7 +107,9 @@ def sample_generator(env, model, render=True, min_batch_size=10000,id_=0):
 
             step_lim = 1000
             for t in range(step_lim):
-                action, state = model.predict(obs, state=state, deterministic=True)
+                # action, state = model.predict(obs, state=state, deterministic=True)
+                action_dist = model.policy.get_distribution(model.policy.obs_to_tensor(obs)[0])
+                action = action_dist.get_actions(deterministic=False) # can change to deterministic if wanted.
                 next_state, reward, done, _ = env.step(action)
 
                 episode_reward += reward[0]
@@ -125,7 +127,7 @@ def sample_generator(env, model, render=True, min_batch_size=10000,id_=0):
                     state = None
 
                 mask = 0 if done else 1
-                memory.push(obs, action, mask, next_state, reward)
+                memory.push(obs, action_dist, action, mask, next_state, reward)
                 obs = next_state
 
                 if render: 
@@ -194,20 +196,16 @@ class AgentCollection:
             # batched_state = np.array(batch.state).reshape(-1, policy.env.observation_space.shape[0])
             # states = torch.from_numpy(batched_state).to(torch.float).to('cpu')
             # act_dist = torch.from_numpy(policy.predict(states, deterministic=deterministic)[0])
-            
-            # states = torch.from_numpy(np.array(batch.state).squeeze(1))
-            states, _ = policy.policy.obs_to_tensor(np.array(batch.state).squeeze(1))
+
+            # states, _ = policy.policy.obs_to_tensor(np.array(batch.state).squeeze(1))
+            # act_dist = policy.policy.get_distribution(states) # returns stable baselines distribution (categorical)
+
             # states = np.array(batch.state).squeeze(1)
-
-            # print(states.shape)
-            # print(policy.policy.observation_space.shape)
-
-            act_dist = policy.policy.get_distribution(states) # returns stable baselines distribution (categorical)
-            # print(act_dist)
             # act_dist = torch.from_numpy(policy.predict(states, deterministic=deterministic)[0])
             
             # print("done!")
-            dataset += [(state, act_dist) for state, act_dist in zip(states, act_dist)]
+            dataset += [(torch.from_numpy(state), act_dist) for state, act_dist in zip(batch.state, batch.action_dist)]
+            # dataset += [(state, act_dist) for state, act_dist in zip(states, act_dist)]
         return dataset, teacher_average_reward
 
     def exercise(self, env, policy, render=True, min_batch_size=10000, pid=0):
