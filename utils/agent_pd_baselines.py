@@ -127,7 +127,8 @@ def sample_generator(env, model, render=True, min_batch_size=10000,id_=0):
                     state = None
 
                 mask = 0 if done else 1
-                memory.push(obs, action_dist, action, mask, next_state, reward)
+                action_logits = action_dist.distribution.logits.detach()
+                memory.push(obs, action_logits, action, mask, next_state, reward)
                 obs = next_state
 
                 if render: 
@@ -204,7 +205,7 @@ class AgentCollection:
             # act_dist = torch.from_numpy(policy.predict(states, deterministic=deterministic)[0])
             
             # print("done!")
-            dataset += [(torch.from_numpy(state), act_dist) for state, act_dist in zip(batch.state, batch.action_dist)]
+            dataset += [(torch.from_numpy(state), act_logits) for state, act_logits in zip(batch.state, batch.action_logits)]
             # dataset += [(state, act_dist) for state, act_dist in zip(states, act_dist)]
         return dataset, teacher_average_reward
 

@@ -22,54 +22,34 @@ class Policy(nn.Module):
         self.input_size = input_size
         self.output_size = output_size
         self.hidden_sizes = hidden_sizes
-        self.nonlinearity = nonlinearity
-        self.min_log_std = math.log(min_std)
-        self.num_layers = len(hidden_sizes) + 1
 
-        self.is_disc_action = False
+        self.is_disc_action = True
 
-        layer_sizes = (input_size,) + hidden_sizes
-        for i in range(1, self.num_layers):
-            self.add_module('layer{0}'.format(i),
-                            nn.Linear(layer_sizes[i - 1], layer_sizes[i]))
-        self.mu = nn.Linear(layer_sizes[-1], output_size)
+        self.logits_network = nn.Sequential(
+            nn.Linear(self.input_size, 512),
+            nn.LeakyReLU(),
+            nn.Linear(512, 512),
+            nn.LeakyReLU(),
+            nn.Linear(512, self.output_size)
+        )
 
-        self.sigma = nn.Parameter(torch.Tensor(output_size))
-        self.sigma.data.fill_(math.log(init_std))
         self.apply(_weight_init)
 
     def forward(self, input, params=None):
         if params is None:
             params = OrderedDict(self.named_parameters())
-        output = input
-        for i in range(1, self.num_layers):
-            output = F.linear(output,
-                              weight=params['layer{0}.weight'.format(i)],
-                              bias=params['layer{0}.bias'.format(i)])
-            output = self.nonlinearity(output)
-        mu = F.linear(output, weight=params['mu.weight'],
-                      bias=params['mu.bias'])
-        scale = torch.exp(torch.clamp(params['sigma'], min=self.min_log_std))
-        #print(mu.data, scale.data)
+        logits = self.logits_network(input)
 
-        return Normal(loc=mu, scale=scale)
+        return Categorical(logits=logits)
 
     def get_log_prob(self, x, actions):
         pi = self.forward(x)
         return pi.log_prob(actions)
 
-    def get_std(self, state):
-        pi = self.forward(state)
-        return pi.scale
-
     def select_action(self, state):
         pi = self.forward(state)
         action = pi.sample()
         return action
-
-    def mean_action(self, state):
-        pi = self.forward(state)
-        return pi.loc
 
 
 # class Policy(nn.Module):
