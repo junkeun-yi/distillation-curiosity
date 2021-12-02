@@ -217,13 +217,18 @@ class AgentCollection:
             for t in range(1000):
                 state_var = tensor(state).unsqueeze(0)
                 with torch.no_grad():
-                    action = policy.mean_action(state_var.to(torch.float))[0].numpy()
+                    # action = policy.select_action(state_var.to(torch.float))[0].numpy()
+                    #FIXME: WHY IS IT NOT BATCHED??
+                    state_var = state_var.view(1, -1) #FIXME Transposes b/c its currently d x b
+                    action_dist = policy.forward(state_var.to(torch.float))
+                    action = action_dist.sample()
                 next_state, reward, done, _ = env.step(action)
                 reward_episode += reward
 
                 mask = 0 if done else 1
 
-                memory.push(state, action, mask, next_state, reward)
+                action_logits = action_dist.logits.detach()
+                memory.push(state, action_logits, action, mask, next_state, reward)
 
                 if render:
                     env.render()

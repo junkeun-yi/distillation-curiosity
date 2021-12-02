@@ -4,6 +4,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 
 # Parallel environments
+#TODO: Add Atari Wrapper (see stable baselines make_atari_env)
 env = make_vec_env("FreewayNoFrameskip-v0", n_envs=8)
 
 model = PPO("CnnPolicy", env, verbose=1,

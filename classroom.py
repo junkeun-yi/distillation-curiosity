@@ -17,6 +17,9 @@ import numpy as np
 from copy import deepcopy
 from torch.nn import KLDivLoss
 from torch.distributions.kl import kl_divergence
+import torch.nn.functional as F
+
+T = 0.01 #Temperature TODO: MAKE INTO ARGUMENT!
 
 class Student(object):
     def __init__(self, args, optimizer=None):
@@ -39,6 +42,7 @@ class Student(object):
 
         # get the teacher's action distribution logits.
         act_logits_teacher = torch.vstack([sample[1] for sample in batch])
+        # act_logits_teacher = torch.randn((self.training_batch_size, 3)) #TODO: REMOVE!!
 
         # get the states.
         state = torch.vstack([sample[0].reshape(self.num_inputs) for sample in batch]) / 255
@@ -47,9 +51,10 @@ class Student(object):
         act_logits_student = self.policy.forward(state).logits
 
         # pytorch KL Divergece Loss.
-        loss = KLDivLoss(reduction='batchmean')
-        loss = loss(act_logits_student, act_logits_teacher)
-    
+        kl_loss = KLDivLoss(reduction='batchmean')
+        loss = kl_loss(F.log_softmax(act_logits_student, dim=1), F.softmax(act_logits_teacher / T, dim=1))
+        #kl_loss(F.log_softmax(act_logits_student, dim=1), F.softmax(act_logits_teacher/T, dim=1))
+        
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()

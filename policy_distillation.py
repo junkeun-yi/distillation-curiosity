@@ -77,6 +77,7 @@ def main(args):
         if iter % (args.test_interval/10) == 0: # for logging
             writer.add_scalar('{} loss'.format(args.loss_metric), loss.data, iter)
             print('Itr {} {} loss: {:.2f}'.format(iter, args.loss_metric, loss.data))
+
         if iter % args.test_interval == 0:
             average_reward = student.test()
             student.save('{}/student_{}_{:.2f}.pkl'.format(path_to_save, iter, average_reward))

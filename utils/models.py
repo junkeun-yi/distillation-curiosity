@@ -39,6 +39,7 @@ class Policy(nn.Module):
     def forward(self, input, params=None):
         if params is None:
             params = OrderedDict(self.named_parameters())
+
         logits = self.logits_network(input)
 
         return Categorical(logits=logits)
