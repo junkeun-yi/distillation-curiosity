@@ -18,12 +18,21 @@ To run: \
 
 Current TODOs:
 
-1. FIX policy distillation code.
-    - Currently, training is broken, all losses amount to 0.
-2. FIX student policy from 3 layer MLP to something useful in `utils/models.py`
-3. ADD Curiosity code.
-4. Get PPO checkpoints for various rewards (performances.):
-    - Currently: have teacher with reward 21. Want lower performing teachers.
+- [ ] Get PPO Checkpoints for various rewards
+- [ ] Fix Training Bug (0 loss!)
+- [ ] Switch to Student Data Collection (instead of current teacher based)
+- [ ] Get a list of tasks (from Burda paper). Evaluate relevance
+- [ ] Add curiosity module to student
+- [ ] Add intrinsic reward scheduling
+
+
+
+
+
+
+
+
+
 
 
 
