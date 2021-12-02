@@ -1,3 +1,37 @@
+# CS285 Project code
+
+Go to following link for checkpoints. \
+Checkpoints must be added as `{code_dir}/rl_trained_agents/ppo/FreewayNoFrameskip-v0.zip` \
+https://drive.google.com/drive/folders/1kKigj-4_VqQ02fqRQKN6SdYVnElkwXHk?usp=sharing
+
+To run: \
+`python policy_distillation.py --algo ppo --env FreewayNoFrameskip-v`
+
+Current TODOs:
+
+1. FIX policy distillation code.
+    - Currently, training is broken, all losses amount to 0.
+2. FIX student policy from 3 layer MLP to something useful in `utils/models.py`
+3. ADD Curiosity code.
+4. Get PPO checkpoints for various rewards (performances.):
+    - Currently: have teacher with reward 21. Want lower performing teachers.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # policy-distillation-baselines
 
 Pytorch Implementation of Policy Distillation for control, which has well-trained teachers via [stable_baselines3](https://github.com/DLR-RM/stable-baselines3).
