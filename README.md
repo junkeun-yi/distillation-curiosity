@@ -1,11 +1,20 @@
 # CS285 Project code
 
-Go to following link for checkpoints. \
-Checkpoints must be added as `{code_dir}/rl_trained_agents/ppo/FreewayNoFrameskip-v0.zip` \
-https://drive.google.com/drive/folders/1kKigj-4_VqQ02fqRQKN6SdYVnElkwXHk?usp=sharing
+## Requirements
+
+Optionally (and recommended), make a virtual environment.
+
+0. `pip install wheel`
+1. `pip install -r requirements.txt`
+2. Go to following link for checkpoints. Checkpoints must be added as `{code_dir}/rl_trained_agents/ppo/FreewayNoFrameskip-v0.zip` 
+   - https://drive.google.com/drive/folders/1kKigj-4_VqQ02fqRQKN6SdYVnElkwXHk?usp=sharing
+3. In order to import ROMS, you need to download Roms.rar from the [Atari 2600 VCS ROM Collection](http://www.atarimania.com/rom_collection_archive_atari_2600_roms.html) and extract the .rar file. Once you've done that, run:
+   - `python -m atari_py.import_roms <path to folder>`
+   - This should print out the names of ROMs as it imports them. The ROMs will be copied to your atari_py installation directory.
+4. `ale-import-roms --import-from-pkg atari_py.atari_roms`
 
 To run: \
-`python policy_distillation.py --algo ppo --env FreewayNoFrameskip-v`
+`python policy_distillation.py --algo ppo --env FreewayNoFrameskip-v0`
 
 Current TODOs:
 
@@ -15,19 +24,6 @@ Current TODOs:
 3. ADD Curiosity code.
 4. Get PPO checkpoints for various rewards (performances.):
     - Currently: have teacher with reward 21. Want lower performing teachers.
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

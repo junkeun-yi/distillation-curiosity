@@ -1,8 +1,12 @@
-gym
+gym[atari]
 tensorboardX
 torch
-stable-baselines3[extra,tests,docs]>=1.0
+wheel
+# stable-baselines3[extra,tests,docs]>=1.0
+stable-baselines3
 pybullet
 optuna
-pyyaml>=5.1
-sb3-contrib>=1.0
+atari-py
+sb3-contrib
+opencv-python
+tensorboard
