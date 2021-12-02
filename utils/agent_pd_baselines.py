@@ -108,6 +108,7 @@ def sample_generator(env, model, render=True, min_batch_size=10000,id_=0):
             step_lim = 1000
             for t in range(step_lim):
                 # action, state = model.predict(obs, state=state, deterministic=True)
+                # get the action distribution through stable_baselines3 PPO Policy code.
                 action_dist = model.policy.get_distribution(model.policy.obs_to_tensor(obs)[0])
                 action = action_dist.get_actions(deterministic=False) # can change to deterministic if wanted.
                 next_state, reward, done, _ = env.step(action)
@@ -128,6 +129,7 @@ def sample_generator(env, model, render=True, min_batch_size=10000,id_=0):
 
                 mask = 0 if done else 1
                 action_logits = action_dist.distribution.logits.detach()
+                # push to memory the state, action distribution logits, and other info.
                 memory.push(obs, action_logits, action, mask, next_state, reward)
                 obs = next_state
 
@@ -186,27 +188,16 @@ class AgentCollection:
 
     def get_expert_sample(self, batch_size, deterministic=True):
         # print("get_expert_sample called!!")
-        memories, logs = self.collect_samples(batch_size)
+        memories, logs = self.collect_samples(batch_size) # collect samples using the teachers.
         teacher_rewards = [log['avg_reward'] for log in logs if log is not None]
         teacher_average_reward = np.array(teacher_rewards).mean()
         # TODO better implementation of dataset and sampling
         # construct training dataset containing pairs {X:state, Y:output of teacher policy}
         dataset = []
         for memory, policy in zip(memories, self.policies):
-            batch = memory.sample()
-            # batched_state = np.array(batch.state).reshape(-1, policy.env.observation_space.shape[0])
-            # states = torch.from_numpy(batched_state).to(torch.float).to('cpu')
-            # act_dist = torch.from_numpy(policy.predict(states, deterministic=deterministic)[0])
-
-            # states, _ = policy.policy.obs_to_tensor(np.array(batch.state).squeeze(1))
-            # act_dist = policy.policy.get_distribution(states) # returns stable baselines distribution (categorical)
-
-            # states = np.array(batch.state).squeeze(1)
-            # act_dist = torch.from_numpy(policy.predict(states, deterministic=deterministic)[0])
-            
-            # print("done!")
+            batch = memory.sample() # sample from the memory.
+            # create dataset.
             dataset += [(torch.from_numpy(state), act_logits) for state, act_logits in zip(batch.state, batch.action_logits)]
-            # dataset += [(state, act_dist) for state, act_dist in zip(states, act_dist)]
         return dataset, teacher_average_reward
 
     def exercise(self, env, policy, render=True, min_batch_size=10000, pid=0):

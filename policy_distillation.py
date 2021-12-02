@@ -69,8 +69,10 @@ def main(args):
         if iter > args.num_student_episodes:
             break
         if iter % args.sample_interval == 1:
+            # populate teacher's data. goes to utils/agent_pd_baselines#get_expert_sample
             expert_data, expert_reward = teachers.get_expert_sample()
         
+        # train the student.
         loss = student.train(expert_data)
         if iter % (args.test_interval/10) == 0: # for logging
             writer.add_scalar('{} loss'.format(args.loss_metric), loss.data, iter)

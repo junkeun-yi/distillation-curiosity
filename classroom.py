@@ -34,13 +34,19 @@ class Student(object):
             self.optimizer = Adam(self.policy.parameters(), lr=args.lr)
 
     def train(self, expert_data):
+        # get batch, each element is a memory object from utils/replay_memory.py
         batch = random.sample(expert_data, self.training_batch_size)
 
+        # get the teacher's action distribution logits.
         act_logits_teacher = torch.vstack([sample[1] for sample in batch])
 
+        # get the states.
         state = torch.vstack([sample[0].reshape(self.num_inputs) for sample in batch]) / 255
+
+        # get the student's action distribution logits by calling the student policy network form utils/models.py
         act_logits_student = self.policy.forward(state).logits
 
+        # pytorch KL Divergece Loss.
         loss = KLDivLoss(reduction='batchmean')
         loss = loss(act_logits_student, act_logits_teacher)
     

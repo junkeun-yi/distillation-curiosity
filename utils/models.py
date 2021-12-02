@@ -25,6 +25,7 @@ class Policy(nn.Module):
 
         self.is_disc_action = True
 
+        # TODO: change to better network than 3 layer MLP.
         self.logits_network = nn.Sequential(
             nn.Linear(self.input_size, 512),
             nn.LeakyReLU(),
